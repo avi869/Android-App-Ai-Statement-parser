@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.aistatementparser.Adaptor.StatementAdapter
 import com.example.aistatementparser.databinding.FragmentStatementBinding
@@ -49,16 +50,17 @@ class StatementFragment : Fragment() {
         setupRecyclerView()
         setupObserver()
         setupClickListner()
+
+        binding.button.setOnClickListener {
+            findNavController().navigate(R.id.action_statementFragment_to_homeFragment)
+        }
     }
 
     private fun setupRecyclerView() {
         adapter = StatementAdapter { categoryName ->
             viewModel.setSelectedCategory(categoryName)
 
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, CategoryFragment())
-                .addToBackStack(null)
-                .commit()
+            findNavController().navigate(R.id.action_statementFragment_to_categoryFragment)
         }
 
         binding.rvTransactions.layoutManager = LinearLayoutManager(requireContext())
@@ -104,6 +106,7 @@ class StatementFragment : Fragment() {
             pickPdfFile()
         }
     }
+
 
     private fun pickPdfFile(){
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {

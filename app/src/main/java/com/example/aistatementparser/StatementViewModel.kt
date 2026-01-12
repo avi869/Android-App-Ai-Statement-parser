@@ -3,13 +3,16 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.aistatementparser.Model.CategorySpend
 import com.example.aistatementparser.Model.TransactionDto
 import com.example.aistatementparser.StatementRepository
+import com.example.aistatementparser.analytics.TransactionAnalytics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
@@ -80,4 +83,28 @@ class StatementViewModel(
     }
 
     /* ---- existing uriToFile() and fileToMultipart() stay same ---- */
+
+    val debitCategorySpend: StateFlow<List<CategorySpend>> = allTransactions.map { transactions: List<TransactionDto> ->
+                TransactionAnalytics.categoryPercentage(transactions, "DEBIT")
+            }
+            .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5_000), initialValue = emptyList())
+
+
+    val creditCategorySpend: StateFlow<List<CategorySpend>> = allTransactions.map { transactions ->
+                TransactionAnalytics.categoryPercentage(transactions, "CREDIT")
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+
+
+    val totalDebit: StateFlow<Double> = allTransactions.map { transaction ->
+        TransactionAnalytics.totalDebit(transaction)
+    }
+        .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5_000), initialValue = 0.0)
+
+    val totalCredit: StateFlow<Double> = allTransactions.map { transaction ->
+        TransactionAnalytics.totalCredit(transaction)
+    }
+        .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5_000), initialValue = 0.0)
+
 }
