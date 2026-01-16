@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -24,7 +25,7 @@ class HomeFragment : Fragment() {
     private lateinit var debitChart: PieChart
     private lateinit var creditChart: PieChart
 
-    private var _binding: FragmentCategoryBinding? = null
+    private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
     // Shared ViewModel
@@ -36,11 +37,11 @@ class HomeFragment : Fragment() {
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        debitChart = binding.testPieChart)
-        creditChart = binding.testPieChart2)
+        debitChart = binding.testPieChart
+        creditChart = binding.testPieChart2
 
-        setupPieChart(debitChart)
-        setupPieChart(creditChart)
+        setupChart(debitChart)
+        setupChart(creditChart)
 
         return binding.root
     }
@@ -50,6 +51,7 @@ class HomeFragment : Fragment() {
 
         observeDebitChart()
         observeCreditChart()
+        observeTotals()
     }
 
     private fun observeDebitChart() {
@@ -88,11 +90,25 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun observeTotals(){
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.totalDebit.collect { total->
+                binding.debit.text = "Debit\n₹%,.0f".format(total)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.totalCredit.collect { total->
+                binding.credit.text = "Credit\n₹%,.0f".format(total)
+            }
+        }
+    }
+
     private fun setupChart(chart: PieChart) {
         chart.apply {
             setHoleColor(Color.TRANSPARENT)
             setCenterTextColor(Color.BLACK)
-            setCenterTextSize(18f)
+            setCenterTextSize(12f)
             description.isEnabled = false
         }
     }
@@ -123,7 +139,7 @@ class HomeFragment : Fragment() {
         }
 
         chart.data = PieData(dataSet)
-        chart.animateY(800)
+        chart.animateY(1000)
         chart.invalidate()
     }
 

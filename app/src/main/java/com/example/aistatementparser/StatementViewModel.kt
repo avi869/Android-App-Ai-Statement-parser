@@ -15,7 +15,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import okhttp3.MultipartBody
+import java.io.IOException
 
 class StatementViewModel(
     private val repository: StatementRepository
@@ -57,7 +60,7 @@ class StatementViewModel(
                     it.Category.equals(category, ignoreCase = true)
                 }
             }
-        }
+        } // convert Flow (Cold) into StateFlow (Hot)
             .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5_000), initialValue = emptyList())
 
     // 5️⃣ Upload PDF
@@ -65,10 +68,13 @@ class StatementViewModel(
         viewModelScope.launch {
             try {
                 _loading.value = true
-                val result = repository.uploadPdf(part)
+                val result = withContext(Dispatchers.IO) {
+                    repository.uploadPdf(part)
+                }
                 _allTransactions.value = result
                 _error.value = null
-            } catch (e: Exception) {
+
+            } catch (e: IOException) {
                 _error.value = e.message
             } finally {
                 _loading.value = false

@@ -12,7 +12,7 @@ object RetrofitClient {
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
-        .readTimeout(120, TimeUnit.SECONDS)   // ⬅️ OCR needs this
+        .readTimeout(600, TimeUnit.SECONDS)   // ⬅️ OCR needs this
         .writeTimeout(120, TimeUnit.SECONDS)
         .retryOnConnectionFailure(true)
         .build()
