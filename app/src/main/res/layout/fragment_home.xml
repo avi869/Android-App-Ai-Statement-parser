@@ -10,6 +10,7 @@
         android:id="@+id/testPieChart"
         android:layout_width="274dp"
         android:layout_height="236dp"
+        android:background="#F5F5F5"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.883"
