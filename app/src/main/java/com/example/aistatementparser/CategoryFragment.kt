@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.aistatementparser.Adaptor.StatementAdapter
+import com.example.aistatementparser.Model.TransactionDto
 import com.example.aistatementparser.databinding.FragmentCategoryBinding
 import kotlinx.coroutines.launch
 
@@ -25,10 +26,7 @@ class CategoryFragment : Fragment() {
     private lateinit var adapter: StatementAdapter
     private var currentType = "DEBIT"
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCategoryBinding.inflate(inflater, container, false)
         return binding.root
@@ -60,32 +58,27 @@ class CategoryFragment : Fragment() {
                 binding.debitCreditSwitch.text = "Debit"
                 "DEBIT"
             }
+            updateUi(viewModel.filteredTransactions.value)
         }
     }
 
     private fun observeData() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.filteredTransactions.collect { list ->
-
-                binding.categoryName.text =
-                    viewModel.selectedCategory.value ?: "All"
-
-                val debitList = list.filter { it.Type.equals("DEBIT", true) }
-                val creditList = list.filter { it.Type.equals("CREDIT", true) }
-
-                val showList =
-                    if (currentType == "DEBIT") debitList else creditList
-
-                adapter.submitList(showList)
-
-                val total = showList.sumOf {
-                    it.Amount.toDoubleOrNull() ?: 0.0
-                }
-
-                binding.totalAmount.text =
-                    "₹%,.2f".format(total)
+                binding.categoryName.text = viewModel.selectedCategory.value ?: "All"
+                updateUi(list)
             }
         }
+    }
+
+    private fun updateUi(transactions: List<TransactionDto>){
+        val filteredList = transactions.filter { it.Type.equals(currentType, true) }
+
+        adapter.submitList(filteredList)
+
+        val total = filteredList.sumOf { it.Amount.toDoubleOrNull() ?: 0.0
+        }
+        binding.totalAmount.text = "₹%,.2f".format(total)
     }
 
     override fun onDestroyView() {
